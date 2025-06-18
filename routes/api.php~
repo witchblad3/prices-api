@@ -1,0 +1,8 @@
+<?php
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PriceController\PriceController;
+
+Route::get('/test', function () {
+    return response()->json(['message' => 'API route работает']);
+});
+Route::get('/prices', [PriceController::class, 'index']);

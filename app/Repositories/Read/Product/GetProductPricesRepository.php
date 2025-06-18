@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Repositories\Read\Product;
+
+use App\Models\Product;
+use App\Services\Product\Dto\GetProductPricesDto;
+use Illuminate\Support\Collection;
+
+class GetProductPricesRepository implements GetProductPricesRepositoryInterface
+{
+    public function getProductsWithFormattedPrice(GetProductPricesDto $dto): Collection
+    {
+        $rate = match ($dto->currency) {
+            'USD' => 90,
+            'EUR' => 100,
+            default => 1,
+        };
+
+        $symbol = match ($dto->currency) {
+            'USD' => '$',
+            'EUR' => '€',
+            default => '₽',
+        };
+
+        return Product::all()->map(function ($product) use ($rate, $symbol, $dto) {
+            $converted = $product->price / $rate;
+
+            $formatted = match ($dto->currency) {
+                'USD', 'EUR' => $symbol . number_format($converted, 2, '.', ''),
+                default => number_format($converted, 0, ',', ' ') . " $symbol",
+            };
+
+            $product->formatted_price = $formatted;
+            return $product;
+        });
+    }
+}
